@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "###################################################\n## Calculate the profile likelihoods over a grid ##\n###################################################\n\nlibrary(fields)\nlibrary(spam)\nsource(\"functions.R\")\nload(\"anom1962.RData\")\n\n## Calculate the distance matrix and save it for later use\n\nd <- rdist.earth(loc)\n\n## If you don't have enough memory to calculate the distance matrix\n## all at once, try this:\n\n##d <- matrix(NA, n, n)\n##index <- round(seq(1, n, length = 5))\n##for(i in 1:4){\n##  d[index[i]:index[i+1],] <- rdist.earth(loc[index[i]:index[i+1],], loc)\n##}\n\nsave(z, loc, n, d, file = \"anom1962.RData\")\n\n## Calculate the profile nll's over a grid\n\nrho.seq <- seq(20, 80, length = 30)\nnll.seq <- sapply(rho.seq, nll)\n\n## You can change the taper range (gamma in the paper) here\n\nsetup <- make.tapersetup(d, wendland2.1, taprange = 50)\nrm(d); gc() # Free up some memory\n\nnll.1taper.seq <- sapply(rho.seq, nll.1taper, setup = setup)\nnll.2taper.seq <- sapply(rho.seq, nll.2taper, setup = setup)\n\nsave(rho.seq, nll.seq, nll.1taper.seq, nll.2taper.seq,\n     file = \"likcalc.RData\")\n",
+    "created" : 1486999766842.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1826064433",
+    "id" : "44F0CE5A",
+    "lastKnownWriteTime" : 1486999756,
+    "last_content_update" : 1486999756,
+    "path" : "C:/Users/sm1pjp/Google Drive/Paelo Stuff/taperexample/likcalc.R",
+    "project_path" : null,
+    "properties" : {
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

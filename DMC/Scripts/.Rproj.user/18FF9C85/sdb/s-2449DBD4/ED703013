@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "install.packages(\"stats\")\ninstall.packages(\"Matrix\")\n\ninstall.packages(\"plyr\")\ninstall.packages(\"RColorBrewer\")\ninstall.packages(\"scales\")\n\ninstall.packages(\"matlab\")\ninstall.packages(\"geometry\")\ninstall.packages(\"maptools\")\ninstall.packages(\"SDMTools\")\ninstall.packages(\"colorspace\")\ninstall.packages(\"R.matlab\")\n\ninstall.packages(\"ggplot2\")\ninstall.packages(\"akima\")\n",
+    "created" : 1486133072852.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3448935337",
+    "id" : "ED703013",
+    "lastKnownWriteTime" : 1486119797,
+    "last_content_update" : 1486119797,
+    "path" : "C:/Users/Phillip/Google Drive/Paelo Stuff/DMC/Scripts/install_packages.R",
+    "project_path" : "install_packages.R",
+    "properties" : {
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

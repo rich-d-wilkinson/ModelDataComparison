@@ -1,0 +1,29 @@
+plot_pseudo_obs_prior, 'latav', 'ps', 1
+plot_pseudo_obs_prior, 'latav', 'ps', 0
+plot_pseudo_obs_prior, 'latav', 'png', 1
+plot_pseudo_obs_prior, 'latav', 'png', 0
+
+plot_pseudo_obs_prior, 'globav', 'ps', 1
+plot_pseudo_obs_prior, 'globav', 'ps', 0
+plot_pseudo_obs_prior, 'globav', 'png', 1
+plot_pseudo_obs_prior, 'globav', 'png', 0
+
+plot_pseudo_obs_prior, 'abs', 'ps', 1
+plot_pseudo_obs_prior, 'abs', 'ps', 0
+plot_pseudo_obs_prior, 'abs', 'png', 1
+plot_pseudo_obs_prior, 'abs', 'png', 0
+
+plot_pseudo_obs_prior, 'cosine', 'ps', 1
+plot_pseudo_obs_prior, 'cosine', 'ps', 0
+plot_pseudo_obs_prior, 'cosine', 'png', 1
+plot_pseudo_obs_prior, 'cosine', 'png', 0
+
+plot_pseudo_obs_prior, 'cosine2', 'ps', 1
+plot_pseudo_obs_prior, 'cosine2', 'ps', 0
+plot_pseudo_obs_prior, 'cosine2', 'png', 1
+plot_pseudo_obs_prior, 'cosine2', 'png', 0
+
+plot_pseudo_obs_prior, 'anom', 'ps', 1
+plot_pseudo_obs_prior, 'anom', 'ps', 0
+plot_pseudo_obs_prior, 'anom', 'png', 1
+plot_pseudo_obs_prior, 'anom', 'png', 0

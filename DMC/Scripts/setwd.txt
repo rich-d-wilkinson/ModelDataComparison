@@ -1,0 +1,7 @@
+setwd ("C:/Users/Fran/Dropbox/Work/Paleo_obs_tests/Fran/")
+
+setwd ("C:/Users/fb7897/Dropbox/Work/Paleo_obs_tests/Fran/")
+
+setwd ("O:/Documents/11_Projects/03_PhD_Pliocene_CO2/DMC")
+
+setwd ("O:/Documents/31_Methods/04_DMC")

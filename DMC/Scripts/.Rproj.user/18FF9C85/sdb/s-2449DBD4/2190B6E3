@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "library(stats)\nlibrary(Matrix)\nlibrary(ggplot2)\nlibrary(plyr)\nlibrary(RColorBrewer)\nlibrary(scales)\nlibrary(akima)\nlibrary(matlab)\nlibrary(geometry)\nlibrary(maptools)\nlibrary(SDMTools)\nlibrary(colorspace)\nlibrary(R.matlab)\n\ngraphics.off()\nrm(list=ls())\n\n\n# Set up parallel\n#NCPUs <- detectCores()\n#logfile <- paste('cluster.log',sep='')\n#cl <- makeCluster(NCPUs,outfile=logfile)\n\n# Load user-defined functions\nsource('Code/Functions/matlab_fns.R')\nsource('Code/Functions/GMRF_fns.R')        \nsource('Code/Functions/linalg_fns.R')\nsource('Code/Functions/plotting_fns.R')\nsource('Code/Functions/generic_fns.R')\nsource('Code/Functions/geometry_fns.R')\nsource('Code/Functions/frequency_fns.R')\nsource('Code/Functions/EOF.R')\nsource('Code/Functions/basis_fns.R')\nsource(\"Code/Functions/scale-brewer.r\")\nsource(\"Code/Paleo_Functions.R\")",
+    "created" : 1486140852156.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2783570406",
+    "id" : "2190B6E3",
+    "lastKnownWriteTime" : 1486119814,
+    "last_content_update" : 1486119814,
+    "path" : "C:/Users/Phillip/Google Drive/Paelo Stuff/DMC/Scripts/Code/Init.R",
+    "project_path" : "Code/Init.R",
+    "properties" : {
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

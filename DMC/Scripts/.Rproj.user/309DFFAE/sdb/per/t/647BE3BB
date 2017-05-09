@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "######################################\n## Maximize the profile likelihoods ##\n######################################\n\nlibrary(fields)\nlibrary(spam)\nsource(\"functions.R\")\nload(\"anom1962.RData\")\nload(\"likcalc.RData\")\n\n## Minimize the profile negative log-likelihood\n## Take range from minimizing value over the grid\n\ninterval <- rho.seq[(1:length(rho.seq))[nll.seq == min(nll.seq)] + c(-1, 1)]\nrho.mle <- optimize(f = nll, interval = interval)$minimum\n\nsetup <- make.tapersetup(d, wendland2.1, taprange = 50)\nrm(d); gc()\n\n## Minimize the 1taper profile negative log-likelihood\n\ninterval <- rho.seq[(1:length(rho.seq))[nll.1taper.seq == min(nll.1taper.seq)] + c(-1, 1)]\nrho.mle.1taper <- optimize(f = nll.1taper, interval = interval, setup = setup)$minimum\n\n## Minimize the 2taper profile negative log-likelihood\n\ninterval <- rho.seq[(1:length(rho.seq))[nll.2taper.seq == min(nll.2taper.seq)] + c(-1, 1)]\nrho.mle.2taper <- optimize(f = nll.2taper, interval = interval, setup = setup)$minimum\n\nsave(rho.mle, rho.mle.1taper, rho.mle.2taper, file = \"maxlik.RData\")\n",
+    "created" : 1487000493806.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2272517173",
+    "id" : "647BE3BB",
+    "lastKnownWriteTime" : 1486999756,
+    "last_content_update" : 1486999756,
+    "path" : "C:/Users/sm1pjp/Google Drive/Paelo Stuff/taperexample/maxlik.R",
+    "project_path" : null,
+    "properties" : {
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,361 @@
+library(Matrix)
+library(ggplot2)
+library(devtools)
+library(MVST)
+ibrary(GPfit)
+library(lhs) #latin hypercubes design
+#
+# First we need the design points and simulated data:
+#This function takes the design points and returns the simulated data:
+computer_simulator <- function(x) {
+x1=4*x[,1] - 2; x2=4*x[,2] - 2;
+t1 = 1 + (x1 + x2 + 1)^2*(19 - 14*x1 + 3*x1^2 - 14*x2 +
+6*x1*x2 + 3*x2^2);
+t2 = 30 + (2*x1 -3*x2)^2*(18 - 32*x1 + 12*x1^2 + 48*x2 -
+36*x1*x2 + 27*x2^2);
+y = t1*t2;
+return(y)
+}
+library(GPfit)
+library(lhs) #latin hypercubes design
+#
+# First we need the design points and simulated data:
+#This function takes the design points and returns the simulated data:
+computer_simulator <- function(x) {
+x1=4*x[,1] - 2; x2=4*x[,2] - 2;
+t1 = 1 + (x1 + x2 + 1)^2*(19 - 14*x1 + 3*x1^2 - 14*x2 +
+6*x1*x2 + 3*x2^2);
+t2 = 30 + (2*x1 -3*x2)^2*(18 - 32*x1 + 12*x1^2 + 48*x2 -
+36*x1*x2 + 27*x2^2);
+y = t1*t2;
+return(y)
+}
+n = 30; d = 2;
+set.seed(1);
+x = maximinLHS(n,d); #Design matrix is a Latin hypercube design with nxd points
+y = computer_simulator(x); #Simulated data points (deterministic simulator)
+beta = rnorm(2)
+R = corr_matrix(x,beta,corr = list(type = "matern", nu = 5/2)) #calc matern covariance matrix
+GPmodel = GP_fit(x,y,corr=);
+library(GPfit)
+print(GPmodel)
+library(Matrix)
+library(ggplot2)
+library(devtools)
+install_github("andrewzm/MVST",build_vignettes=F,dependencies=T)
+library(MVST)
+## ----data-load-----------------------------------------------------------
+Data <- data(icesat) #satellite data giving location, time, height change m yr(-1)
+# and associated uncertainty
+data(shapefiles) #polygons for plotting
+#snippet of the data:
+Data[1,]
+dim(Data)
+Data
+data(icesat) #satellite data giving location, time, height change m yr(-1)
+icesat[1,]
+data <- icesat #satellite data giving location, time, height change m yr(-1)
+data[1,]
+data[1:15,]
+dim(data)
+data_abr_t <- data[data$t == "0"]
+data_abr <- data_abr_t[1:20,]
+data_abr_t <- data[data$t == "1"]
+data_abr <- rbind(data_abr, data_abr_t[1:20,])
+data_abr_t <- data[data$t == "2"]
+data_abr <- rbind(data_abr, data_abr_t[1:20,])
+data_abr_t <- data[data$t == "3"]
+data_abr <- rbind(data_abr, data_abr_t[1:20,])
+data <- icesat #satellite data giving location, time, height change m yr(-1)
+data_abr_t <- data[data$t == "0"]
+data_abr_t <- subset(data, t == "0")
+data_abr <- data_abr_t[1:20,]
+data_abr_t <- subset(data, t == "1")
+data_abr <- rbind(data_abr, data_abr_t[1:20,])
+data_abr_t <- subset(data, t == "2")
+data_abr <- rbind(data_abr, data_abr_t[1:20,])
+data_abr_t <- subset(data, t == "3")
+data_abr <- rbind(data_abr, data_abr_t[1:20,])
+data_abr
+install.packages("stats")
+install.packages("Matrix")
+install.packages("plyr")
+install.packages("RColorBrewer")
+install.packages("scales")
+install.packages("matlab")
+install.packages("geometry")
+install.packages("maptools")
+install.packages("SDMTools")
+install.packages("colorspace")
+install.packages("R.matlab")
+install.packages("ggplot2")
+install.packages("akima")
+install.packages("DiceKriging")
+install.packages("stats")
+install.packages("stats")
+install.packages("stats")
+install.packages("Matrix")
+install.packages("plyr")
+install.packages("RColorBrewer")
+install.packages("scales")
+install.packages("matlab")
+install.packages("geometry")
+install.packages("maptools")
+install.packages("SDMTools")
+install.packages("colorspace")
+install.packages("R.matlab")
+install.packages("ggplot2")
+install.packages("akima")
+install.packages("stats")
+install.packages("stats")
+start_time <- proc.time()
+source("Code/Init.R")
+set.seed(1)
+# Example script
+# ------------------------------------------
+# INPUT DATA AND SETTINGS
+# Model settings
+# --------------
+# Models - gridded datasets of data values as a vector
+# Model outputs are stored in directory Model_Data/<Model_set> with filenames <models>.txt
+# Directory should also contain a file mask.txt with the indices of the region to be analysed
+# IDL file um2krig will prepare UM data appropriately
+Model_set='CO2_anom'
+models = c('tdgth', 'tczyi', 'tdgtj', 'tczyj', 'tdgtg', 'tczyk', 'tdgtk', 'tdgti')
+# Specify grid dimensions for model data
+# (lon_min,lon_max,lon_int,lat_min,lat_max,lat_int)
+model_grid <- c(-180,178.75,1.25,-89.375,89.375,1.25) # HadCM3 ocean temps, shifted 1 hemisphere
+# model_grid <- c(-180,176.25,3.75,-90,90,2.5)          # HadCM3 atmosphere temps, shifted 1 hemisphere
+# model_grid <- c(-179.5,179.5,1.0,89.5,-89.5,-1.0)     # HadISST data
+# Observations
+# -------------
+# Observations need to have points in a list of 4 columns with headers "x,y,z,std" = lon, lat, observation, uncertainty
+# Observations are stored in directory Observation_Data/<Obs_set> with filenames <obs>.txt
+Obs_set='P3+_SST_anom'
+obs = c('lambda_100', 'lambda_90', 'lambda_80', 'lambda_70', 'lambda_60', 'lambda_50', 'lambda_40', 'lambda_30', 'lambda_20', 'lambda_10')
+# Mesh settings
+# -------------
+# Choose egg or sphere mesh
+#manifold = "Egg"
+manifold = "Sphere"
+# Matlab is called for egg meshes to generate new mesh with specified anisotropy = "stretch"  (MATLAB file: Generate_Mesh_egg.m)
+# stretch = sqrt of equatorial radius, default 0.05 (polar radius = 1)
+# Although stretch=1 should give a sphere, this doesn't actually seem to work for a reason I haven't worked out, use sphere option.
+#stretch <- 0.05 # Egg
+# Sphere - writes different set of mesh files (MATLAB file: Generate_Mesh.m)
+# For sphere option, don't need to vary radius, use smooth to vary region of influence, so this mesh is not updated.
+stretch <- 1 # Sphere
+# Calculation settings
+# -------------------
+# smoothness parameter, i.e. radius of influence. So higher is smoother. Default is smooth = 0.3.
+smooth = 0.3
+# These lines retained for reference only - context within greater system.
+fit = "Obs" # "Sim" "Obs" or "Model"
+# Output
+# -------------------
+mesh <- paste0(manifold,"-",stretch)
+outdir <- paste0("Output/O-",Obs_set,"_M-",Model_set,"_ME-",mesh,"_SM-",smooth)
+# ------------------------------------------
+# END - INPUT DATA AND SETTINGS
+# ------------------------------------------
+# INITIALISATION
+r = c(sqrt(stretch), sqrt(stretch),1)
+model_grid_rad <- model_grid*pi/180.
+Lmodel_summary <- matrix(data=NA,nrow=length(obs),ncol=length(models))
+# SET UP GLOBAL MESH
+#Adjust radius in 3d space accordingly
+if (manifold == "Egg") {
+# Call Matlab to generate egg mesh with specified stretch value
+if (.Platform$OS.type == "windows"){
+Matlab$startServer()
+matlab_server <<- Matlab(remote=F)
+Sys.sleep(10)
+open(matlab_server)
+} else if (.Platform$OS.type == "unix"){
+Matlab$startServer()
+matlab_server <<- Matlab(remote=F)
+Sys.sleep(10)
+open(matlab_server)
+}
+setVariable(matlab_server,stretch=stretch)
+cat("Generating egg mesh in Matlab",sep="\n")
+evaluate(matlab_server, paste("cd Code;Generate_Mesh_egg(stretch);"))
+close(matlab_server)
+cat("Finished generating egg mesh in MATLAB",sep="\n")
+Sphere_triang <- Load_egg_mesh()
+} else {
+# mesh should not need updating for sphere as it does not change
+Sphere_triang <- Load_sphere_mesh()
+}
+p_lon_lat <- Convert_to_lon_lat(Sphere_triang@pars$p,1)
+setwd("C:/Users/Phillip/Google Drive/Paelo Stuff/DMC")
+r = c(sqrt(stretch), sqrt(stretch),1)
+model_grid_rad <- model_grid*pi/180.
+Lmodel_summary <- matrix(data=NA,nrow=length(obs),ncol=length(models))
+# SET UP GLOBAL MESH
+#Adjust radius in 3d space accordingly
+if (manifold == "Egg") {
+# Call Matlab to generate egg mesh with specified stretch value
+if (.Platform$OS.type == "windows"){
+Matlab$startServer()
+matlab_server <<- Matlab(remote=F)
+Sys.sleep(10)
+open(matlab_server)
+} else if (.Platform$OS.type == "unix"){
+Matlab$startServer()
+matlab_server <<- Matlab(remote=F)
+Sys.sleep(10)
+open(matlab_server)
+}
+setVariable(matlab_server,stretch=stretch)
+cat("Generating egg mesh in Matlab",sep="\n")
+evaluate(matlab_server, paste("cd Code;Generate_Mesh_egg(stretch);"))
+close(matlab_server)
+cat("Finished generating egg mesh in MATLAB",sep="\n")
+Sphere_triang <- Load_egg_mesh()
+} else {
+# mesh should not need updating for sphere as it does not change
+Sphere_triang <- Load_sphere_mesh()
+}
+p_lon_lat <- Convert_to_lon_lat(Sphere_triang@pars$p,1)
+# ------------------------------------------
+r = c(sqrt(stretch), sqrt(stretch),1)
+model_grid_rad <- model_grid*pi/180.
+Lmodel_summary <- matrix(data=NA,nrow=length(obs),ncol=length(models))
+# SET UP GLOBAL MESH
+#Adjust radius in 3d space accordingly
+if (manifold == "Egg") {
+# Call Matlab to generate egg mesh with specified stretch value
+if (.Platform$OS.type == "windows"){
+Matlab$startServer()
+matlab_server <<- Matlab(remote=F)
+Sys.sleep(10)
+open(matlab_server)
+} else if (.Platform$OS.type == "unix"){
+Matlab$startServer()
+matlab_server <<- Matlab(remote=F)
+Sys.sleep(10)
+open(matlab_server)
+}
+setVariable(matlab_server,stretch=stretch)
+cat("Generating egg mesh in Matlab",sep="\n")
+evaluate(matlab_server, paste("cd Code;Generate_Mesh_egg(stretch);"))
+close(matlab_server)
+cat("Finished generating egg mesh in MATLAB",sep="\n")
+Sphere_triang <- Load_egg_mesh()
+} else {
+# mesh should not need updating for sphere as it does not change
+Sphere_triang <- Load_sphere_mesh()
+}
+p_lon_lat <- Convert_to_lon_lat(Sphere_triang@pars$p,1)
+# ------------------------------------------
+r = c(sqrt(stretch), sqrt(stretch),1)
+model_grid_rad <- model_grid*pi/180.
+Lmodel_summary <- matrix(data=NA,nrow=length(obs),ncol=length(models))
+# SET UP GLOBAL MESH
+#Adjust radius in 3d space accordingly
+if (manifold == "Egg") {
+# Call Matlab to generate egg mesh with specified stretch value
+if (.Platform$OS.type == "windows"){
+Matlab$startServer()
+matlab_server <<- Matlab(remote=F)
+Sys.sleep(10)
+open(matlab_server)
+} else if (.Platform$OS.type == "unix"){
+Matlab$startServer()
+matlab_server <<- Matlab(remote=F)
+Sys.sleep(10)
+open(matlab_server)
+}
+setVariable(matlab_server,stretch=stretch)
+cat("Generating egg mesh in Matlab",sep="\n")
+evaluate(matlab_server, paste("cd Code;Generate_Mesh_egg(stretch);"))
+close(matlab_server)
+cat("Finished generating egg mesh in MATLAB",sep="\n")
+Sphere_triang <- Load_egg_mesh()
+} else {
+# mesh should not need updating for sphere as it does not change
+Sphere_triang <- Load_sphere_mesh()
+}
+p_lon_lat <- Convert_to_lon_lat(Sphere_triang@pars$p,1)
+# ------------------------------------------
+if (manifold == "Egg") {
+# Call Matlab to generate egg mesh with specified stretch value
+if (.Platform$OS.type == "windows"){
+Matlab$startServer()
+matlab_server <<- Matlab(remote=F)
+Sys.sleep(10)
+open(matlab_server)
+} else if (.Platform$OS.type == "unix"){
+Matlab$startServer()
+matlab_server <<- Matlab(remote=F)
+Sys.sleep(10)
+open(matlab_server)
+}
+setVariable(matlab_server,stretch=stretch)
+cat("Generating egg mesh in Matlab",sep="\n")
+evaluate(matlab_server, paste("cd Code;Generate_Mesh_egg(stretch);"))
+close(matlab_server)
+cat("Finished generating egg mesh in MATLAB",sep="\n")
+Sphere_triang <- Load_egg_mesh()
+} else {
+# mesh should not need updating for sphere as it does not change
+Sphere_triang <- Load_sphere_mesh()
+}
+p_lon_lat <- Convert_to_lon_lat(Sphere_triang@pars$p,1)
+} #/loop j
+if (manifold == "Egg") {
+# Call Matlab to generate egg mesh with specified stretch value
+if (.Platform$OS.type == "windows"){
+Matlab$startServer()
+matlab_server <<- Matlab(remote=F)
+Sys.sleep(10)
+open(matlab_server)
+} else if (.Platform$OS.type == "unix"){
+Matlab$startServer()
+matlab_server <<- Matlab(remote=F)
+Sys.sleep(10)
+open(matlab_server)
+}
+setVariable(matlab_server,stretch=stretch)
+cat("Generating egg mesh in Matlab",sep="\n")
+evaluate(matlab_server, paste("cd Code;Generate_Mesh_egg(stretch);"))
+close(matlab_server)
+cat("Finished generating egg mesh in MATLAB",sep="\n")
+Sphere_triang <- Load_egg_mesh()
+} else {
+# mesh should not need updating for sphere as it does not change
+Sphere_triang <- Load_sphere_mesh()
+}
+p_lon_lat <- Convert_to_lon_lat(Sphere_triang@pars$p,1)
+setwd("C:/Users/Phillip/Google Drive/Paelo Stuff/DMC/Scripts/Code")
+if (manifold == "Egg") {
+# Call Matlab to generate egg mesh with specified stretch value
+if (.Platform$OS.type == "windows"){
+Matlab$startServer()
+matlab_server <<- Matlab(remote=F)
+Sys.sleep(10)
+open(matlab_server)
+} else if (.Platform$OS.type == "unix"){
+Matlab$startServer()
+matlab_server <<- Matlab(remote=F)
+Sys.sleep(10)
+open(matlab_server)
+}
+setVariable(matlab_server,stretch=stretch)
+cat("Generating egg mesh in Matlab",sep="\n")
+evaluate(matlab_server, paste("cd Code;Generate_Mesh_egg(stretch);"))
+close(matlab_server)
+cat("Finished generating egg mesh in MATLAB",sep="\n")
+Sphere_triang <- Load_egg_mesh()
+} else {
+# mesh should not need updating for sphere as it does not change
+Sphere_triang <- Load_sphere_mesh()
+}
+p_lon_lat <- Convert_to_lon_lat(Sphere_triang@pars$p,1)
+start_time <- proc.time()
+source("Code/Init.R")
+set.seed(1)
+start_time <- proc.time()
+source("Code/Init.R")
+set.seed(1)

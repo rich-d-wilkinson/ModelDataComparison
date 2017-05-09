@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "setwd (\"C:/Users/Fran/Dropbox/Work/Paleo_obs_tests/Fran/\")\n\nsetwd (\"C:/Users/fb7897/Dropbox/Work/Paleo_obs_tests/Fran/\")\n\nsetwd (\"O:/Documents/11_Projects/03_PhD_Pliocene_CO2/DMC\")\n\nsetwd (\"O:/Documents/31_Methods/04_DMC\")\n",
+    "created" : 1486133058121.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4256200916",
+    "id" : "A0BC9F73",
+    "lastKnownWriteTime" : 1486119797,
+    "last_content_update" : 1486119797,
+    "path" : "C:/Users/Phillip/Google Drive/Paelo Stuff/DMC/Scripts/setwd.txt",
+    "project_path" : "setwd.txt",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "text"
+}

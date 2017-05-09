@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "#This code replaces the previous version for testing the gstat krige function for long,lat data:\n# We want to test if the understanding of how to use krige is correct by comparing different projection/CRS designations.\n\n#################################################################\n#################################################################\ndata1.fit <-\n  structure(list(z = c(0,5), lon = c(10,50), lat = c(45,45)), .Names = c(\"z\", \"lon\", \"lat\"), row.names = c(NA,-2L), class = \"data.frame\")\n\ndata1.pred <-\n  structure(list(lon = c(20), lat = c(45)), .Names = c(\"lon\",\"lat\"), row.names = c(NA,-1L), class = \"data.frame\")\n  \ncoordinates(data1.fit) <- ~lon+lat\nproj4string(data1.fit) <- CRS('+proj=longlat +datum=WGS84 +ellps=WGS84')\ncoordinates(data1.pred) <- ~lon+lat\nproj4string(data1.pred) <- CRS('+proj=longlat +datum=WGS84 +ellps=WGS84')\nmodel.choice <- vgm(psill =  3, \"Exp\", range = 2.949, nugget = 0.1) \nm1.krige <- krige(val ~ 1, locations=data1.fit, newdata=data1.pred, model = model.choice)\narray(c(m1.krige@data$var1.pred,m1.krige@data$var1.var), dim=c(2,1)) #ordinary kriging value \nvg.data1 <- variogram(z~1, data1.fit, cutoff=1e10)\nis.projected(data1.fit) #maybe this is how to do it. \nsummary(data1.fit)\n##################################################################\n##################################################################\ncrs.ll1 <- CRS(\"+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs\")  # Lambert Azimuthal Equal Area\ndata1.fit.ll1 <- spTransform(data1.fit, crs.ll1)\ncrs.ll2 <- CRS(\"+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs\")  # Lambert Azimuthal Equal Area\ndata1.pred.ll1 <- spTransform(data1.pred, crs.ll1)\nmodel.choice <- vgm(psill =  3, \"Exp\", range = 2.949, nugget = 0.1) \nm2.krige <- krige(val ~ 1, locations=data1.fit.ll1, newdata=data1.pred.ll1, model = model.choice)\narray(c(m2.krige@data$var1.pred,m2.krige@data$var1.var), dim=c(2,1)) #ordinary kriging value \n#Why are these the same as the unprojected lon,lat data?\nvg.data1.ll1 <- variogram(z~1, data1.fit.ll1, cutoff=1e10)\nis.projected(data1.fit.ll1) #correctly says true.\n\n##################################################################\n##################################################################\ndata1.fit.ll2 = spTransform(data1.fit,CRS(\"+init=epsg:4326\"))\ndata1.pred.ll2 = spTransform(data1.pred, CRS(\"+init=epsg:4326\"))\nmodel.choice <- vgm(psill =  3, \"Exp\", range = 2.949, nugget = 0.1) \nm3.krige <- krige(val ~ 1, locations=data1.fit.ll2, newdata=data1.pred.ll2, model = model.choice)\narray(c(m3.krige@data$var1.pred,m3.krige@data$var1.var), dim=c(2,1)) #ordinary kriging value \nvg.data1.ll2 <- variogram(z~1, data1.fit.ll2, cutoff=1e10)\nis.projected(data1.pred.ll2)\n",
+    "created" : 1488448209168.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4039296131",
+    "id" : "D06CD388",
+    "lastKnownWriteTime" : 1488386222,
+    "last_content_update" : 1488386222,
+    "path" : "C:/Users/sm1pjp/Google Drive/Paelo Stuff/DMC/Scripts/gstatkrige_ToyExampleTesting_v2.R",
+    "project_path" : "gstatkrige_ToyExampleTesting_v2.R",
+    "properties" : {
+    },
+    "relative_order" : 12,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

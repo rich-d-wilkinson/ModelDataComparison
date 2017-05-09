@@ -1,0 +1,35 @@
+library(stats)
+library(Matrix)
+library(ggplot2)
+library(plyr)
+library(RColorBrewer)
+library(scales)
+library(akima)
+library(matlab)
+library(geometry)
+library(maptools)
+library(SDMTools)
+library(colorspace)
+library(R.matlab)
+
+graphics.off()
+rm(list=ls())
+
+
+# Set up parallel
+#NCPUs <- detectCores()
+#logfile <- paste('cluster.log',sep='')
+#cl <- makeCluster(NCPUs,outfile=logfile)
+
+# Load user-defined functions
+source('Code/Functions/matlab_fns.R')
+source('Code/Functions/GMRF_fns.R')        
+source('Code/Functions/linalg_fns.R')
+source('Code/Functions/plotting_fns.R')
+source('Code/Functions/generic_fns.R')
+source('Code/Functions/geometry_fns.R')
+source('Code/Functions/frequency_fns.R')
+source('Code/Functions/EOF.R')
+source('Code/Functions/basis_fns.R')
+source("Code/Functions/scale-brewer.r")
+source("Code/Paleo_Functions.R")

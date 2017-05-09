@@ -1,0 +1,277 @@
+library(Matrix)
+library(ggplot2)
+library(devtools)
+library(MVST)
+ibrary(GPfit)
+library(lhs) #latin hypercubes design
+#
+# First we need the design points and simulated data:
+#This function takes the design points and returns the simulated data:
+computer_simulator <- function(x) {
+x1=4*x[,1] - 2; x2=4*x[,2] - 2;
+t1 = 1 + (x1 + x2 + 1)^2*(19 - 14*x1 + 3*x1^2 - 14*x2 +
+6*x1*x2 + 3*x2^2);
+t2 = 30 + (2*x1 -3*x2)^2*(18 - 32*x1 + 12*x1^2 + 48*x2 -
+36*x1*x2 + 27*x2^2);
+y = t1*t2;
+return(y)
+}
+library(GPfit)
+library(lhs) #latin hypercubes design
+#
+# First we need the design points and simulated data:
+#This function takes the design points and returns the simulated data:
+computer_simulator <- function(x) {
+x1=4*x[,1] - 2; x2=4*x[,2] - 2;
+t1 = 1 + (x1 + x2 + 1)^2*(19 - 14*x1 + 3*x1^2 - 14*x2 +
+6*x1*x2 + 3*x2^2);
+t2 = 30 + (2*x1 -3*x2)^2*(18 - 32*x1 + 12*x1^2 + 48*x2 -
+36*x1*x2 + 27*x2^2);
+y = t1*t2;
+return(y)
+}
+n = 30; d = 2;
+set.seed(1);
+x = maximinLHS(n,d); #Design matrix is a Latin hypercube design with nxd points
+y = computer_simulator(x); #Simulated data points (deterministic simulator)
+beta = rnorm(2)
+R = corr_matrix(x,beta,corr = list(type = "matern", nu = 5/2)) #calc matern covariance matrix
+GPmodel = GP_fit(x,y,corr=);
+library(GPfit)
+print(GPmodel)
+library(Matrix)
+library(ggplot2)
+library(devtools)
+install_github("andrewzm/MVST",build_vignettes=F,dependencies=T)
+library(MVST)
+## ----data-load-----------------------------------------------------------
+Data <- data(icesat) #satellite data giving location, time, height change m yr(-1)
+# and associated uncertainty
+data(shapefiles) #polygons for plotting
+#snippet of the data:
+Data[1,]
+dim(Data)
+Data
+data(icesat) #satellite data giving location, time, height change m yr(-1)
+icesat[1,]
+data <- icesat #satellite data giving location, time, height change m yr(-1)
+data[1,]
+data[1:15,]
+dim(data)
+data_abr_t <- data[data$t == "0"]
+data_abr <- data_abr_t[1:20,]
+data_abr_t <- data[data$t == "1"]
+data_abr <- rbind(data_abr, data_abr_t[1:20,])
+data_abr_t <- data[data$t == "2"]
+data_abr <- rbind(data_abr, data_abr_t[1:20,])
+data_abr_t <- data[data$t == "3"]
+data_abr <- rbind(data_abr, data_abr_t[1:20,])
+data <- icesat #satellite data giving location, time, height change m yr(-1)
+data_abr_t <- data[data$t == "0"]
+data_abr_t <- subset(data, t == "0")
+data_abr <- data_abr_t[1:20,]
+data_abr_t <- subset(data, t == "1")
+data_abr <- rbind(data_abr, data_abr_t[1:20,])
+data_abr_t <- subset(data, t == "2")
+data_abr <- rbind(data_abr, data_abr_t[1:20,])
+data_abr_t <- subset(data, t == "3")
+data_abr <- rbind(data_abr, data_abr_t[1:20,])
+data_abr
+library("DiceKriging", lib.loc="~/R/win-library/3.3")
+library("geosphere", lib.loc="~/R/win-library/3.3")
+library("gstat", lib.loc="~/R/win-library/3.3")
+xy <- expand.grid(1:100, 1:100)
+names(xy) <- c("x","y")
+gridded(xy) = ~x+y
+model.choice <- vgm(1,"Exp",15)
+g.dummy <- gstat(formula = z~1, dummy = TRUE, beta = 0,
+model = vgm(1,"Exp",15), nmax = 10) # for speed -- 10 is too small!!
+yy <- predict(g.dummy, xy, nsim = 1)
+spplot(yy)
+data_sim1 <- cbind(xy,yy)
+vgm.exp <- variogram(yy ~ 1, xy )
+coordinates(xy) = ~x+y
+yy@coords[1,]
+yy@coords[2,]
+yy@coords[3,]
+yy@data$sim1[1]
+data1 <- cbind(yy@coords, yy@data$sim1)
+data1[1,]
+colnames(data1) <- c("x","y","yy")
+data[1,]
+data1[1,]
+coordinates(data1) = ~x+y
+vgm.exp <- variogram(yy ~ 1, data1 )
+vgm.exp <- variogram(yy ~ 1, ~ x + y, data=data1 )
+View(data1)
+View(data1)
+data1[1,]
+vgm.exp <- variogram(yy ~ 1, ~ data1 + y, data=data1 )
+coordinates(data1) = ~data1+y
+View(data1)
+View(data1)
+data1 <- cbind(yy@coords, yy@data$sim1)
+View(data1)
+View(data1)
+xy <- expand.grid(1:10, 1:10)
+names(xy) <- c("x","y")
+gridded(xy) = ~x+y
+model.choice <- vgm(1,"Exp",15)
+g.dummy <- gstat(formula = z~1, dummy = TRUE, beta = 0,
+model = vgm(1,"Exp",15), nmax = 10) # for speed -- 10 is too small!!
+yy <- predict(g.dummy, xy, nsim = 1)
+# show one realisation:
+spplot(yy)
+variogram(yy)
+data1 <- cbind(yy@coords, yy@data$sim1)
+data(data1)
+View(data1)
+colnames(data1) <- c("x","y","yy")
+data(data1)
+View(data1)
+View(data1)
+colnames(data1) <- c("p","q","yy")
+View(data1)
+View(data1)
+coordinates(data1) = ~ p + q
+vgm.exp <- variogram(yy ~ 1, data = data1, locations = ~ p + q)
+data1 <- as.matrix(data1)
+data(data1)
+View(data1)
+vgm.exp <- variogram(yy ~ 1, data = data1, locations = ~ p + q)
+attach(data1)
+data1 <- data.frame(data1)
+attach(data1)
+coordinates(data1) = ~ p + q
+vgm.exp <- variogram(yy ~ 1, data = data1, locations = ~ p + q)
+vgm.exp <- variogram(yy ~ 1, data = data1)
+attach(data1)
+fit.vgm.exp <- fit.variogram(vgm.exp, model = model.choice)
+plot(vgm.exp, model = fit.vgm.exp)
+model.fit <- vgm("Exp") #if we enter no parameters then fit.variogram is called for the chosen model to estimate the parameters
+fit.vgm.exp <- fit.variogram(vgm.exp, model = model.fit)
+plot(vgm.exp, model = fit.vgm.exp)
+model.bad.choice <- vgm(1, "Sph", 1)
+fit.vgm.exp <- fit.variogram(vgm.exp, model = model.bad.choice)
+model.bad.choice <- vgm(1, "Sph", 10)
+fit.vgm.exp <- fit.variogram(vgm.exp, model = model.bad.choice)
+plot(vgm.exp, model = fit.vgm.exp)
+model.bad.choice <- vgm(4, "Sph", 12, 0.1)
+#How good are the estimated parameters?
+fit.vgm.exp <- fit.variogram(vgm.exp, model = model.bad.choice)
+model.bad.choice <- vgm(2, "Sph", 8, 0.1)
+#How good are the estimated parameters?
+fit.vgm.exp <- fit.variogram(vgm.exp, model = model.bad.choice)
+plot(vgm.exp, model = fit.vgm.exp)
+model.bad.choice2 <- vgm(2, "Gau", 8, 0.1)
+fit.vgm.exp <- fit.variogram(vgm.exp, model = model.bad.choice2)
+plot(vgm.exp, model = fit.vgm.exp)
+data.pred <- data1[c(1,12,23,34,45,56,67,78,89,100),]
+data.pred.points <- data.pred[,1:2]
+data.fit <- data1[-data.pred,]
+data.pred
+data.pred.points <- data.pred[,1]
+data.fit <- data1[-data.pred,]
+keep <- c(1,12,23,34,45,56,67,78,89,100)
+data.fit <- data1[-keep,]
+data.pred <- data1[keep,]
+data.pred.points <- data.pred[,1]
+m1.krig <- krige(yy ~ 1, data.fit, data.pred.points, model = model.choice)
+m1.krig
+t(t(m1.krig$var1.pred - data.pred[,2]))
+data.pred[,2]
+data.pred
+data.pred[,1]
+data.pred.points <- data.pred$coordinates
+data.pred
+data.pred.points
+data.pred@coords
+keep <- c(1,12,23,34,45,56,67,78,89,100)
+data.pred <- data1[keep,]
+data.pred.points <- data.pred@coords
+data.fit <- data1[-keep,]
+attach(data.pred.points)
+coordinates(data.pred.points) = ~ p + q
+data.pred.points <- data.frame(data.pred@coords)
+attach(data.pred.points)
+coordinates(data.pred.points) = ~ p + q
+m1.krig <- krige(yy ~ 1, data.fit, data.pred.points, model = model.choice)
+m1.krig
+t(t(m1.krig$var1.pred - data.pred@data$yy))
+xyz <- expand.grid(1:10, 1:10, 1:10)
+names(xyz) <- c("x","y","z")
+gridded(xyz) = ~x+y+z
+model.choice <- vgm(1,"Exp",15)
+g.dummy <- gstat(formula = val~1, dummy = TRUE, beta = 0,
+model = vgm(1,"Exp",15), nmax = 10) # for speed -- 10 is too small!!
+val <- predict(g.dummy, xyz, nsim = 1)
+data2 <- cbind(val@coords, val@data$sim1)
+colnames(data2) <- c("p","q","r","val")
+data2 <- data.frame(data2) #needs to be a data frame
+attach(data2)
+coordinates(data2) = ~ p + q + r
+vgm.exp <- variogram(val ~ 1, data = data2)
+fit.vgm.exp <- fit.variogram(vgm.exp, model = model.choice)
+plot(vgm.exp, model = fit.vgm.exp)
+plot(vgm.exp, model = fit.vgm.exp)
+keep <- c(1,12,23,34,45,56,67,78,89,100)
+data.pred <- data1[keep,]
+data.pred.points <- data.frame(data.pred@coords)
+data.fit <- data1[-keep,]
+#attach(data.fit)
+#coordinates(data.fit) = ~ p + q
+attach(data.pred.points)
+coordinates(data.pred.points) = ~ p + q + r
+m1.krig <- krige(val ~ 1, data.fit, data.pred.points, model = model.choice)
+m1.krig #the output are predictions at the locations specified.
+keep <- c(1,12,23,34,45,56,67,78,89,100)
+data.pred <- data2[keep,]
+data.pred.points <- data.frame(data.pred@coords)
+data.fit <- data2[-keep,]
+#attach(data.fit)
+#coordinates(data.fit) = ~ p + q
+attach(data.pred.points)
+coordinates(data.pred.points) = ~ p + q + r
+m1.krig <- krige(val ~ 1, data.fit, data.pred.points, model = model.choice)
+library("gstat", lib.loc="~/R/win-library/3.3")
+setwd("C:/Users/Phillip/Google Drive/Paelo Stuff/DMC/Scripts")
+start_time <- proc.time()
+source("Code/Init.R")
+set.seed(1)
+X <- c(1,2,3)
+acos(X)
+X <- c(0.1,0.2,0.3)
+acos(X)
+X <- array(0.1,0.2,0.3,0.3,0.2,0.1,dim=c(2,3))
+X <- array(c(0.1,0.2,0.3,0.3,0.2,0.1),dim=c(2,3))
+X
+X[,1]^2 + X[,2]^2 + X[,3]^2
+Convert_to_lon_lat(X)
+Convert_to_lon_lat2(X)
+Convert_to_lon_lat2(X)
+start_time <- proc.time()
+source("Code/Init.R")
+set.seed(1)
+Convert_to_lon_lat2(X)
+Convert_to_lon_lat2 <- function(X) {
+#We update the code so that it can take a vector:
+n <- dim(X)[1]
+r <- sqrt(X[,1]^2 + X[,2]^2 + X[,3]^2)
+lat <- acos(X[,3]/r)
+lon <- atan2(X[,2], X[,1])
+return(cbind(lon,lat))
+}
+Convert_to_lon_lat2(X)
+X
+X <- array(c(1,2,3,3,2,1), dim=c(2,3))
+Convert_to_lon_lat2(X)
+theta.phi[1:5,]
+xyz <- expand.grid(-10:10, -10:10, -10:10)
+#need to remove the (0,0,0) point because |.| is zero - should write code for this:
+xyz <- xyz[-4631,]
+names(xyz) <- c("x","y","z")
+xyz_test <- xyz[1:10,]
+#convert this to the (lon,lat):
+theta.phi <- Convert_to_lon_lat2(xyz_test)
+theta.phi[1:5,]
+help(sp)

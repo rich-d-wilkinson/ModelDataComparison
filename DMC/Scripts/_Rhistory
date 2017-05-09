@@ -1,0 +1,512 @@
+sigma_sSq <- sigma^2  #measurement error.
+nugget <- par.vec[3]
+mat.error <- diag(m.error)
+d.full <- geoDistance(coordinates(data.obs), coordinates(data.GCM))
+if( abs(d.full[1,2] - d.full[2,1]) < 0.0001){
+out <- matrix(sigma_sSq, nrow = dim(d.full)[1], ncol = dim(d.full)[2]) + nugget*mat.error
+index_0 <- which(d.full > 0, arr.in = TRUE)
+out[index_0] <- sigma^2*exp(-d.full[index_0]/rho)#element-wise operations.
+}
+else{
+out <- sigma^2*exp(-d.full/rho)#element-wise operations.
+}
+}
+return(out)
+}
+mCRPS.eval <- function(gcm.data, gp.data){ #the data are assumed to be the residuals so there is no mean term.
+sum <- 0
+n <- length(gcm.data)
+for(i in 1:n){
+sum <- sum - (gp.data[i,1] - gcm.data[i])^2 + 1/2*(gp.data[i,1] - gp.data[i,2])^2
+}
+out <- 1/n*sum
+return(out)
+}
+#We need to define a Kernel that uses geodesic distances not Euclidean distances:
+geoGaussianKernel=function(x,y){
+#calculate the geodesic distance between x and y
+x <- as.matrix(t(x))
+y <- as.matrix(t(y)) #these have to be passed in as matrices for the dimension call to work.
+r <- geoDistance(x,y)
+return(exp(-(r^2))) #ignore kernel parameter for now
+}
+covariance.MLE <- function(initial, residual_Obs, dist.mat, matrixFunction, meas.error){
+#M is the number of different starting points to use to find the highest likelihood (problem is that rho doesn't move)
+M <- dim(initial)[1]
+negLogLik <- 1000000000 #initialise the current best choice of parameters.
+for(m in 1:M){
+if( matrixFunction == "Matern_nug"){
+# i) Matern with nugget:
+param.lower <- c(0.05,0.01,0.01,0.00001) #(nu,rho,sigma,nugget)
+#needs upper limit for nu <= 1/2 too.
+param.upper <- c(1/2,5000,10,10) #for validity on the sphere.
+mle.output <- optim(initial[m,], covariance.neg.lik.calc, data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Matern", lower = param.lower,
+upper = param.upper, method="L-BFGS-B")
+}
+else if (matrixFunction == "Matern"){
+# ii) Matern without nugget:
+param.lower <- c(0.2,500,0.01) #(nu,rho,sigma)
+#needs upper limit for nu <= 1/2 too.
+param.upper <- c(1/2,10000,50) #for validity on the sphere.
+mle.output <- optim(initial[m,], covariance.neg.lik.calc, data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Matern", lower = param.lower,
+upper = param.upper, method="L-BFGS-B")
+}
+else if (matrixFunction == "Exponential_nug"){
+# iii) Exponential with nugget:
+param.lower <- c(0.01,0.01,0.00001) #(rho,sigma,nugget)
+param.upper <- c(10000,10,100)
+mle.output <- optim(initial[m,], covariance.neg.lik.calc, data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Exponential", lower = param.lower,
+upper = param.upper, method="L-BFGS-B")
+}
+else if (matrixFunction == "Exponential"){
+# iv) Exponential without nugget:
+param.lower <- c(0.01,0.01) #(rho,sigma)
+param.upper <- c(10000,1000) #for validity on the sphere.
+mle.output <- optim(initial[m,], covariance.neg.lik.calc, data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Exponential", lower = param.lower,
+upper = param.upper, method="L-BFGS-B")
+}
+else if (matrixFunction == "Spherical"){
+# mle.output.spherical <- optim(initial, covariance.neg.lik.calc, data = residual_Obs, n = n, m.error =  meas.error, dist.mat = dist.mat, model = "Spherical", lower = param.lower,
+#                              upper = param.upper, method="L-BFGS-B")
+# mle.output.spherical
+}
+#print(mle.output$value)
+if(mle.output$value < negLogLik){
+mle.output.best <- mle.output
+negLogLik <- mle.output$value
+}
+}
+return(mle.output.best)
+}
+covariance.MLE.NelderMead <- function(initial, residual_Obs, dist.mat, matrixFunction, meas.error){
+#Nedler-Mead version:
+#M is the number of different starting points to use to find the highest likelihood (problem is that rho doesn't move)
+M <- dim(initial)[1]
+#To use Nelder-Mead we need to make sure that we are only passsing positive parameters.
+negLogLik <- 1000000000 #initialise the current best choice of parameters.
+for(m in 1:M){
+if( matrixFunction == "Matern_nug"){
+# i) Matern with nugget:
+mle.output <- optim(initial[m,], covariance.neg.lik.calc.NM, data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Matern", method="Nelder-Mead")
+}
+else if (matrixFunction == "Matern"){
+# ii) Matern without nugget:
+mle.output <- optim(initial[m,], covariance.neg.lik.calc.NM, data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Matern", method="Nelder-Mead") # ,control=list(trace=TRUE))
+}
+else if (matrixFunction == "Exponential_nug"){
+# iii) Exponential with nugget:
+mle.output <- optim(initial[m,], covariance.neg.lik.calc.exp.NM, data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Exponential", method="Nelder-Mead")
+}
+else if (matrixFunction == "Exponential"){
+# iv) Exponential without nugget:
+mle.output <- optim(initial[m,], covariance.neg.lik.calc.exp.NM, data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Exponential", method="Nelder-Mead") #,control=list(trace=TRUE))
+}
+else if (matrixFunction == "Spherical"){
+# mle.output.spherical <- optim(initial, covariance.neg.lik.calc, data = residual_Obs, n = n, m.error =  meas.error, dist.mat = dist.mat, model = "Spherical", lower = param.lower,
+#                              upper = param.upper, method="L-BFGS-B")
+# mle.output.spherical
+}
+if(mle.output$value < negLogLik){
+mle.output.best <- mle.output
+negLogLik <- mle.output$value
+}
+}
+return(mle.output.best)
+}
+covariance.MLE.SA <- function(initial, residual_Obs, lower.b, upper.b, dist.mat, matrixFunction, meas.error){
+#Simulated Annealing version:
+#M is the number of different starting points to use to find the highest likelihood (problem is that rho doesn't move)
+M <- dim(initial)[1]
+#To use Nelder-Mead we need to make sure that we are only passsing positive parameters.
+negLogLik <- 1000000000 #initialise the current best choice of parameters.
+for(m in 1:M){
+if( matrixFunction == "Matern_nug"){
+# i) Matern with nugget:
+mle.output <- GenSA(initial[m,], covariance.neg.lik.calc, lower = lower.b, upper = upper.b, data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Matern")
+}
+else if (matrixFunction == "Matern"){
+# ii) Matern without nugget:
+mle.output <- GenSA(initial[m,], covariance.neg.lik.calc, lower = lower.b, upper = upper.b , data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Matern") # ,control=list(trace=TRUE))
+}
+else if (matrixFunction == "Exponential_nug"){
+# iii) Exponential with nugget:
+mle.output <- GenSA(initial[m,], covariance.neg.lik.calc, lower = lower.b, upper = upper.b , data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Exponential")
+}
+else if (matrixFunction == "Exponential"){
+# iv) Exponential without nugget:
+mle.output <- GenSA(initial[m,], covariance.neg.lik.calc, lower = lower.b, upper = upper.b , data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Exponential") #,control=list(trace=TRUE))
+}
+else if (matrixFunction == "Spherical"){
+# mle.output.spherical <- optim(initial, covariance.neg.lik.calc, data = residual_Obs, n = n, m.error =  meas.error, dist.mat = dist.mat, model = "Spherical", lower = param.lower,
+#                              upper = param.upper, method="L-BFGS-B")
+# mle.output.spherical
+}
+if(mle.output$value < negLogLik){
+mle.output.best <- mle.output
+negLogLik <- mle.output$value
+}
+}
+return(mle.output.best)
+}
+covariance.MLE.PSO <- function(initial, residual_Obs, lower.b, upper.b, dist.mat, matrixFunction, meas.error){
+#Particle Swarm Optimisation approach:
+negLogLik <- 1000000000 #initialise the current best choice of parameters.
+if( matrixFunction == "Matern_nug"){
+# i) Matern with nugget:
+mle.output <- psoptim(initial, covariance.neg.lik.calc, lower = lower.b, upper = upper.b, data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Matern")
+}
+else if (matrixFunction == "Matern"){
+# ii) Matern without nugget:
+mle.output <- psoptim(initial, covariance.neg.lik.calc, lower = lower.b, upper = upper.b , data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Matern") # ,control=list(trace=TRUE))
+}
+else if (matrixFunction == "Exponential_nug"){
+# iii) Exponential with nugget:
+mle.output <- psoptim(initial, covariance.neg.lik.calc, lower = lower.b, upper = upper.b , data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Exponential")
+}
+else if (matrixFunction == "Exponential"){
+# iv) Exponential without nugget:
+mle.output <- psoptim(initial, covariance.neg.lik.calc, lower = lower.b, upper = upper.b , data = residual_Obs, m.error =  meas.error, dist.mat = dist.mat, model = "Exponential") #,control=list(trace=TRUE))
+}
+else if (matrixFunction == "Spherical"){
+# mle.output.spherical <- optim(initial, covariance.neg.lik.calc, data = residual_Obs, n = n, m.error =  meas.error, dist.mat = dist.mat, model = "Spherical", lower = param.lower,
+#                              upper = param.upper, method="L-BFGS-B")
+# mle.output.spherical
+}
+return(mle.output)
+}
+deg2rad <- function(deg) return(deg*pi/180) #convert degrees to radians
+#haversine formula for great-circle distance: Takes degrees and then converts to radians.
+gcd.hf <- function(long1, lat1, long2, lat2) {
+long1 <- deg2rad(long1)
+lat1 <- deg2rad(lat1)
+long2 <- deg2rad(long2)
+lat2 <- deg2rad(lat2)
+R <- 6371 # Earth mean radius [km]
+delta.long <- (long2 - long1)
+delta.lat <- (lat2 - lat1)
+a <- sin(delta.lat/2)^2 + cos(lat1) * cos(lat2) * sin(delta.long/2)^2
+c <- 2 * asin(min(1,sqrt(a)))
+d = R * c
+return(d) # Distance in km
+}
+##
+#Covariance matrix calculation by Rich.
+create_K <- function(location1, location2){
+klist <- lapply(1:2,FUN=create_k)
+out <- abs(outer(location1,location2, FUN="-"))
+tmp<-lapply(1:2, FUN=function(i) klist[[i]](out[,i,,i])     )
+K = tmp[[1]]*tmp[[2]]
+return(K)
+}
+krige.sim <- function(Obs, dataframe, new.locations, model, cov.model, par.vecs, meas.error, M){ #draw realisations from a fitted Gaussian Process
+colnames(new.locations) <- c("lon","lat")
+location.points <- data.frame(new.locations)
+detach(location.points)
+attach(location.points)
+coordinates(location.points) = ~ lon + lat
+proj4string(location.points) <- CRS("+proj=longlat +datum=WGS84 +ellps=WGS84") #this is a lon,lat grid projection of the Earth (I believe.)
+GP.mean <- krige0(Obs ~ 1, dataframe, location.points, model, par.vec = par.vecs, m.error = meas.error)
+dist.mat <- geoDistance(new.locations, new.locations)
+new.m.error <- array(1, dim=c(dim(new.locations)[1],1))
+if( cov.model == "Matern"){
+GP.Cov <- maternCov(dist.mat, par.vec, new.m.error)
+}
+else if (cov.model == "Spherical"){
+GP.Cov <- sphericalCov(dist.mat, par.vec, new.m.error)
+}
+else if (cov.model == "Exponential"){
+GP.Cov <- expCov(dist.mat, par.vec, new.m.error)
+}
+output <- mvrnorm(M, GP.mean, GP.Cov)
+t.output <- t(output)
+return(t.output)
+}
+class(geoGaussianKernel)="kernel"
+rbf.data <- cbind(locations, Obs$z)
+colnames(rbf.data) <- c("lon","lat","val")
+rbf.fit.geo <- gausspr(val ~ lon + lat, data = rbf.data, kernel = geoGaussianKernel, kpar=list(sigma=1)) #uses automatic sigma estimation? What does this mean?
+fitted.val <- predict(rbf.fit.geo, rbf.data[,1:2], type = "response") #kernlab predict not gstat (pass gausspr object in first variable)
+residual_Obs <- Obs$z - fitted.val #residuals from fitted Gaussian RBF model.
+#
+#Create spatial data frame object:
+residual.dataframe <- data.frame(residual_Obs)
+residual.sp = SpatialPointsDataFrame(locations, residual.dataframe, coords.nrs = numeric(0), CRS('+proj=longlat +datum=WGS84 +ellps=WGS84'))
+#CRS is the coordinate reference system, this is the reference system of the location data. In our case this is longitude and latitude.
+coordinates(residual.sp) ~ lon + lat  #coordinate data
+meas.error <- Obs[,4]^2 #measurement errors of observations
+n <- length(residual_Obs)
+dist.mat <- geoDistance(locations,locations) #create the matrix of distances between locations
+#
+covarianceMLE <- covariance.MLE(initial.MLE, residual_Obs, dist.mat, matrixFunction, meas.error)
+output.lik <- array(0, dim=c(9,3))
+output.time <- array(0, dim=c(9,3))
+residual_GCM <- array(0, dim=c(n_ind,8))
+# Distance matrices:
+j <- 1 #the grids are the smae over all GCMs.
+Model_df <- Read_model_data(modelpath = paste0("Model_data/",Model_set,"/",models[j],".txt"),
+indexpath = paste0("Model_data/",Model_set,"/mask.txt"),
+model_grid, plot_it=F)
+## calculating the composite likelihood:
+#remove NA for now:
+Model_df.full <- Model_df[complete.cases(Model_df),]
+location.GCM <- Model_df.full[index,2:3]
+dist.mat.GCM <- geoDistance(location.GCM,location.GCM) #create the matrix of distances between locations
+dist.mat.joint <- geoDistance(location.GCM, locations)
+#mean and covariance:
+K.joint <- expCov(dist.mat.joint, covarianceMLE$par, m.error.GCM.vec)
+Cov.mat <- expCov(dist.mat, covarianceMLE$par, m.error.GCM.vec) + K.joint%*%solve(expCov(dist.mat.pseudo, covarianceMLE$par, m.error.GCM.vec))%*%t(K.joint)
+if (det(Cov.mat) < 0.000000000000001){
+print("Singular")
+Cov.mat <- Cov.mat + 0.5*diag(dim(Cov.mat)[1])
+}
+mean.vec <- K.joint%*%solve(expCov(dist.mat.pseudo, covarianceMLE$par, m.error.GCM.vec))%*%( residual_Obs[,j] )
+m.error.GCM.vec <- array(1, dim=c(n_ind,1)) #identity matrix - measurement error
+mean and covariance:
+K.joint <- expCov(dist.mat.joint, covarianceMLE$par, m.error.GCM.vec)
+Cov.mat <- expCov(dist.mat, covarianceMLE$par, m.error.GCM.vec) + K.joint%*%solve(expCov(dist.mat.pseudo, covarianceMLE$par, m.error.GCM.vec))%*%t(K.joint)
+if (det(Cov.mat) < 0.000000000000001){
+print("Singular")
+Cov.mat <- Cov.mat + 0.5*diag(dim(Cov.mat)[1])
+}
+mean.vec <- K.joint%*%solve(expCov(dist.mat.pseudo, covarianceMLE$par, m.error.GCM.vec))%*%( residual_Obs[,j] )
+dist.mat.obs <- geoDistance(locations,locations) #create the matrix of distances between locations
+K.joint <- expCov(dist.mat.joint, covarianceMLE$par, m.error.GCM.vec)
+Cov.mat <- expCov(dist.mat.GCM, covarianceMLE$par, m.error.GCM.vec) + K.joint%*%solve(expCov(dist.mat.obs, covarianceMLE$par, m.error.GCM.vec))%*%t(K.joint)
+if (det(Cov.mat) < 0.000000000000001){
+print("Singular")
+Cov.mat <- Cov.mat + 0.5*diag(dim(Cov.mat)[1])
+}
+mean.vec <- K.joint%*%solve(expCov(dist.mat.obs, covarianceMLE$par, m.error.GCM.vec))%*%( residual_Obs[,j] )
+for(j in 1:8){ #loop over the GCMs
+Model_df <- Read_model_data(modelpath = paste0("Model_data/",Model_set,"/",models[j],".txt"),
+indexpath = paste0("Model_data/",Model_set,"/mask.txt"),
+model_grid, plot_it=F)
+## calculating the composite likelihood:
+#remove NA for now:
+Model_df.full <- Model_df[complete.cases(Model_df),]
+location.GCM <- Model_df.full[index,2:3]
+data.GCM <- Model_df.full[index,5]
+## residual:
+rbf.data.GCM <- cbind(location.GCM, data.GCM)
+colnames(rbf.data.GCM) <- c("lon","lat","val")
+temp.rbf <- gausspr(val ~ lon + lat, data = rbf.data.GCM, kernel = geoGaussianKernel, kpar=list(sigma=1)) #uses automatic sigma estimation? What does this mean?
+#create residuals (Obs - Predicted):
+fitted.val.GCM <- predict(temp.rbf, rbf.data.GCM[,1:2], type = "response") #kernlab predict not gstat (pass gausspr object in first variable)
+residual_GCM[,j] <- data.GCM - fitted.val.GCM #residuals from fitted Gaussian RBF model.
+residual.GCM.data <- cbind(location.GCM, residual_GCM[,j])
+#
+# composte likelihood calculations:
+# start1 <- Sys.time()
+# comp.NegLogLik <- composite.nll(covarianceMLE$par,residual.GCM.data,block.1,"Matern", m.error.GCM.vec, "NegLogLik")
+# end1 <- Sys.time()
+# time1 <- end1 - start1
+# # NOte: Block composition c(2,1) is equivalent to the usual log-likelihood
+# start2 <- Sys.time()
+# comp1.NegLogLik <- composite.nll(covarianceMLE$par, residual.GCM.data,block.2,"Matern", m.error.GCM.vec, "NegLogLik")
+# end2 <- Sys.time()
+# time2 <- end2 - start2
+# #
+# start3 <- Sys.time()
+# comp2.NegLogLik <- composite.nll(covarianceMLE$par, residual.GCM.data,block.3,"Matern", m.error.GCM.vec, "NegLogLik")
+# #Agrees with real.NegLogLik
+# end3 <- Sys.time()
+# time3 <- end3 - start3
+# #
+# #save into the table to output:
+# output.lik[j,] <- c(comp.NegLogLik, comp1.NegLogLik, comp2.NegLogLik)
+# output.time[j,] <- c(time1, time2, time3)
+#full log-likelihood:
+output.lik[j,1] <- 1/2*log(det(Cov.mat)) + 1/2*t(residual_GCM[,k] - mean.vec)%*%solve(Cov.mat)%*%(residual_GCM[,k] - mean.vec)
+}
+for(j in 1:8){ #loop over the GCMs
+Model_df <- Read_model_data(modelpath = paste0("Model_data/",Model_set,"/",models[j],".txt"),
+indexpath = paste0("Model_data/",Model_set,"/mask.txt"),
+model_grid, plot_it=F)
+## calculating the composite likelihood:
+#remove NA for now:
+Model_df.full <- Model_df[complete.cases(Model_df),]
+location.GCM <- Model_df.full[index,2:3]
+data.GCM <- Model_df.full[index,5]
+## residual:
+rbf.data.GCM <- cbind(location.GCM, data.GCM)
+colnames(rbf.data.GCM) <- c("lon","lat","val")
+temp.rbf <- gausspr(val ~ lon + lat, data = rbf.data.GCM, kernel = geoGaussianKernel, kpar=list(sigma=1)) #uses automatic sigma estimation? What does this mean?
+#create residuals (Obs - Predicted):
+fitted.val.GCM <- predict(temp.rbf, rbf.data.GCM[,1:2], type = "response") #kernlab predict not gstat (pass gausspr object in first variable)
+residual_GCM[,j] <- data.GCM - fitted.val.GCM #residuals from fitted Gaussian RBF model.
+residual.GCM.data <- cbind(location.GCM, residual_GCM[,j])
+#
+# composte likelihood calculations:
+# start1 <- Sys.time()
+# comp.NegLogLik <- composite.nll(covarianceMLE$par,residual.GCM.data,block.1,"Matern", m.error.GCM.vec, "NegLogLik")
+# end1 <- Sys.time()
+# time1 <- end1 - start1
+# # NOte: Block composition c(2,1) is equivalent to the usual log-likelihood
+# start2 <- Sys.time()
+# comp1.NegLogLik <- composite.nll(covarianceMLE$par, residual.GCM.data,block.2,"Matern", m.error.GCM.vec, "NegLogLik")
+# end2 <- Sys.time()
+# time2 <- end2 - start2
+# #
+# start3 <- Sys.time()
+# comp2.NegLogLik <- composite.nll(covarianceMLE$par, residual.GCM.data,block.3,"Matern", m.error.GCM.vec, "NegLogLik")
+# #Agrees with real.NegLogLik
+# end3 <- Sys.time()
+# time3 <- end3 - start3
+# #
+# #save into the table to output:
+# output.lik[j,] <- c(comp.NegLogLik, comp1.NegLogLik, comp2.NegLogLik)
+# output.time[j,] <- c(time1, time2, time3)
+#full log-likelihood:
+output.lik[j,1] <- 1/2*log(det(Cov.mat)) + 1/2*t(residual_GCM[,j] - mean.vec)%*%solve(Cov.mat)%*%(residual_GCM[,j] - mean.vec)
+}
+colnames(location.GCM) <- c("lon","lat")
+location.GCM.points <- data.frame(location.GCM)
+attach(location.GCM.points)
+coordinates(location.GCM.points) = ~ lon + lat
+#model.vgm <- vgm(psill =  maternParam[3], "Exp", range = maternParam[2], nugget = maternParam[4])
+#I think this variogram model is the problem. We can pass a covariance function to the krige0 function in gstat:
+proj4string(location.GCM.points) <- CRS("+proj=longlat +datum=WGS84 +ellps=WGS84") #this is a lon,lat grid projection of the Earth (I believe.)
+start.krige <- Sys.time()
+krige.output <- krige0(residual_Obs ~ 1, residual.sp, location.GCM.points, model = maternCov.krige, par.vec = covarianceMLE$par , m.error = meas.error )
+#krige0 does not produce variance predictions at the locations. Will have to estimate this manually if we want to use the C.I. metric.
+krige.data <- cbind(location.GCM, krige.output)
+end.krige <- Sys.time()
+time.krige <- end.krige - start.krige
+m.error.GCM.vec <- array(1, dim=c(n_ind,1)) #measurement error
+output.lik[9,1] <- 1/2*log(det(Cov.mat)) + 1/2*t(krige.output - mean.vec)%*%solve(Cov.mat)%*%(krige.output - mean.vec)
+-output.lik
+det(Cov.mat)
+covarianceMLE$par
+initial.MLE <- array(c(0.5,0.5,0.5,2000,2500,3500,1,1,1), dim=c(3,3)) #initial parameter values for optimisation.
+matrixFunction <- c("Exponential")
+initial.MLE[,2:3]
+covarianceMLE <- covariance.MLE(initial.MLE[,2:3], residual_Obs, dist.mat, matrixFunction, meas.error)
+covarianceMLE$par
+K.joint <- expCov(dist.mat.joint, covarianceMLE$par, m.error.GCM.vec)
+Cov.mat <- expCov(dist.mat.GCM, covarianceMLE$par, m.error.GCM.vec) + K.joint%*%solve(expCov(dist.mat.obs, covarianceMLE$par, m.error.GCM.vec))%*%t(K.joint)
+if (det(Cov.mat) < 0.000000000000001){
+print("Singular")
+Cov.mat <- Cov.mat + 0.5*diag(dim(Cov.mat)[1])
+}
+mean.vec <- K.joint%*%solve(expCov(dist.mat.obs, covarianceMLE$par, m.error.GCM.vec))%*%( residual_Obs[,j] )
+K.joint <- expCov(dist.mat.joint, covarianceMLE$par, m.error.GCM.vec)
+Cov.mat <- expCov(dist.mat.GCM, covarianceMLE$par, m.error.GCM.vec) + K.joint%*%solve(expCov(dist.mat.obs, covarianceMLE$par, m.error.GCM.vec))%*%t(K.joint)
+if (det(Cov.mat) < 0.000000000000001){
+print("Singular")
+Cov.mat <- Cov.mat + 0.5*diag(dim(Cov.mat)[1])
+}
+mean.vec <- K.joint%*%solve(expCov(dist.mat.obs, covarianceMLE$par, m.error.GCM.vec))%*%( residual_Obs )
+det(Cov.mat)
+for(j in 1:8){ #loop over the GCMs
+Model_df <- Read_model_data(modelpath = paste0("Model_data/",Model_set,"/",models[j],".txt"),
+indexpath = paste0("Model_data/",Model_set,"/mask.txt"),
+model_grid, plot_it=F)
+## calculating the composite likelihood:
+#remove NA for now:
+Model_df.full <- Model_df[complete.cases(Model_df),]
+location.GCM <- Model_df.full[index,2:3]
+data.GCM <- Model_df.full[index,5]
+## residual:
+rbf.data.GCM <- cbind(location.GCM, data.GCM)
+colnames(rbf.data.GCM) <- c("lon","lat","val")
+temp.rbf <- gausspr(val ~ lon + lat, data = rbf.data.GCM, kernel = geoGaussianKernel, kpar=list(sigma=1)) #uses automatic sigma estimation? What does this mean?
+#create residuals (Obs - Predicted):
+fitted.val.GCM <- predict(temp.rbf, rbf.data.GCM[,1:2], type = "response") #kernlab predict not gstat (pass gausspr object in first variable)
+residual_GCM[,j] <- data.GCM - fitted.val.GCM #residuals from fitted Gaussian RBF model.
+residual.GCM.data <- cbind(location.GCM, residual_GCM[,j])
+#
+# composte likelihood calculations:
+# start1 <- Sys.time()
+# comp.NegLogLik <- composite.nll(covarianceMLE$par,residual.GCM.data,block.1,"Matern", m.error.GCM.vec, "NegLogLik")
+# end1 <- Sys.time()
+# time1 <- end1 - start1
+# # NOte: Block composition c(2,1) is equivalent to the usual log-likelihood
+# start2 <- Sys.time()
+# comp1.NegLogLik <- composite.nll(covarianceMLE$par, residual.GCM.data,block.2,"Matern", m.error.GCM.vec, "NegLogLik")
+# end2 <- Sys.time()
+# time2 <- end2 - start2
+# #
+# start3 <- Sys.time()
+# comp2.NegLogLik <- composite.nll(covarianceMLE$par, residual.GCM.data,block.3,"Matern", m.error.GCM.vec, "NegLogLik")
+# #Agrees with real.NegLogLik
+# end3 <- Sys.time()
+# time3 <- end3 - start3
+# #
+# #save into the table to output:
+# output.lik[j,] <- c(comp.NegLogLik, comp1.NegLogLik, comp2.NegLogLik)
+# output.time[j,] <- c(time1, time2, time3)
+#full log-likelihood:
+output.lik[j,1] <- 1/2*log(det(Cov.mat)) + 1/2*t(residual_GCM[,j] - mean.vec)%*%solve(Cov.mat)%*%(residual_GCM[,j] - mean.vec)
+}
+output.lik[9,1] <- 1/2*log(det(Cov.mat)) + 1/2*t(krige.output - mean.vec)%*%solve(Cov.mat)%*%(krige.output - mean.vec)
+-output.lik
+jump <- 270 #how regularly we want to retain locations in the grid
+start <- runif(1,1,jump)
+index <- seq(start, 27000, by = jump)
+n_ind = length(index)
+output.lik <- array(0, dim=c(9,3))
+output.time <- array(0, dim=c(9,3))
+residual_GCM <- array(0, dim=c(n_ind,8))
+# Distance matrices:
+j <- 1 #the grids are the smae over all GCMs.
+Model_df <- Read_model_data(modelpath = paste0("Model_data/",Model_set,"/",models[j],".txt"),
+indexpath = paste0("Model_data/",Model_set,"/mask.txt"),
+model_grid, plot_it=F)
+## calculating the composite likelihood:
+#remove NA for now:
+Model_df.full <- Model_df[complete.cases(Model_df),]
+m.error.GCM.vec <- array(1, dim=c(n_ind,1)) #identity matrix - measurement error
+location.GCM <- Model_df.full[index,2:3]
+dist.mat.GCM <- geoDistance(location.GCM,location.GCM) #create the matrix of distances between locations
+dist.mat.joint <- geoDistance(location.GCM, locations)
+#mean and covariance:
+K.joint <- expCov(dist.mat.joint, covarianceMLE$par, m.error.GCM.vec)
+Cov.mat <- expCov(dist.mat.GCM, covarianceMLE$par, m.error.GCM.vec) + K.joint%*%solve(expCov(dist.mat.obs, covarianceMLE$par, m.error.GCM.vec))%*%t(K.joint)
+if (det(Cov.mat) < 0.000000000000001){
+print("Singular")
+Cov.mat <- Cov.mat + 0.5*diag(dim(Cov.mat)[1])
+}
+mean.vec <- K.joint%*%solve(expCov(dist.mat.obs, covarianceMLE$par, m.error.GCM.vec))%*%( residual_Obs )
+#composite likelihood calculations in loop over GCMs.
+for(j in 1:8){ #loop over the GCMs
+Model_df <- Read_model_data(modelpath = paste0("Model_data/",Model_set,"/",models[j],".txt"),
+indexpath = paste0("Model_data/",Model_set,"/mask.txt"),
+model_grid, plot_it=F)
+## calculating the composite likelihood:
+#remove NA for now:
+Model_df.full <- Model_df[complete.cases(Model_df),]
+location.GCM <- Model_df.full[index,2:3]
+data.GCM <- Model_df.full[index,5]
+## residual:
+rbf.data.GCM <- cbind(location.GCM, data.GCM)
+colnames(rbf.data.GCM) <- c("lon","lat","val")
+temp.rbf <- gausspr(val ~ lon + lat, data = rbf.data.GCM, kernel = geoGaussianKernel, kpar=list(sigma=1)) #uses automatic sigma estimation? What does this mean?
+#create residuals (Obs - Predicted):
+fitted.val.GCM <- predict(temp.rbf, rbf.data.GCM[,1:2], type = "response") #kernlab predict not gstat (pass gausspr object in first variable)
+residual_GCM[,j] <- data.GCM - fitted.val.GCM #residuals from fitted Gaussian RBF model.
+residual.GCM.data <- cbind(location.GCM, residual_GCM[,j])
+#
+# composte likelihood calculations:
+# start1 <- Sys.time()
+# comp.NegLogLik <- composite.nll(covarianceMLE$par,residual.GCM.data,block.1,"Matern", m.error.GCM.vec, "NegLogLik")
+# end1 <- Sys.time()
+# time1 <- end1 - start1
+# # NOte: Block composition c(2,1) is equivalent to the usual log-likelihood
+# start2 <- Sys.time()
+# comp1.NegLogLik <- composite.nll(covarianceMLE$par, residual.GCM.data,block.2,"Matern", m.error.GCM.vec, "NegLogLik")
+# end2 <- Sys.time()
+# time2 <- end2 - start2
+# #
+# start3 <- Sys.time()
+# comp2.NegLogLik <- composite.nll(covarianceMLE$par, residual.GCM.data,block.3,"Matern", m.error.GCM.vec, "NegLogLik")
+# #Agrees with real.NegLogLik
+# end3 <- Sys.time()
+# time3 <- end3 - start3
+# #
+# #save into the table to output:
+# output.lik[j,] <- c(comp.NegLogLik, comp1.NegLogLik, comp2.NegLogLik)
+# output.time[j,] <- c(time1, time2, time3)
+#full log-likelihood:
+output.lik[j,1] <- 1/2*log(det(Cov.mat)) + 1/2*t(residual_GCM[,j] - mean.vec)%*%solve(Cov.mat)%*%(residual_GCM[,j] - mean.vec)
+}
+-output.lik

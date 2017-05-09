@@ -1,0 +1,28 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1486984816133.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "9A20A712",
+    "lastKnownWriteTime" : 2475902421237383458,
+    "last_content_update" : 1486984816133,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "az7uhfo666",
+        "caption" : "meuse",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=meuse&cache_key=az7uhfo666",
+        "displayedObservations" : "155",
+        "environment" : "",
+        "object" : "meuse",
+        "totalObservations" : "155",
+        "variables" : "14"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}
